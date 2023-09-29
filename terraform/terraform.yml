@@ -1,0 +1,45 @@
+stages:
+  - validate
+  - plan
+  - apply
+
+include:
+  - project: 'templates/ci'
+    file: 'DockerInDockerTemplate.yml'
+
+image: alpine:3.15.0
+before_script:
+  - apk add bash terraform
+  - export TF_VAR_cloud_id=${TF_VAR_CLOUD_ID}
+  - export TF_VAR_token=${TF_VAR_TOKEN}
+  - export TF_VAR_token=${TF_VAR_TOKEN}
+  - export TF_VAR_ssh_login=${TF_VAR_SSH_LOGIN}
+  - export TF_VAR_ssh_public_key=${TF_VAR_SSH_PUBLIC_KEY}
+  - cd terraform
+  - mv .terraformrc ~/.terraformrc 
+  - terraform --version
+  - terraform init -backend-config="access_key=${TF_VAR_ACCESS_KEY}" -backend-config="secret_key=${TF_VAR_SECRET_KEY}"
+
+validate:
+  stage: validate
+  script:
+    - terraform validate
+
+plan:
+  stage: plan
+  script:
+    - terraform plan -out "planfile"
+  dependencies:
+    - validate
+  artifacts:
+    paths:
+      - terraform/planfile
+    expire_in: 1h
+
+apply:
+  stage: apply
+  script:
+    - terraform apply -input=false "planfile"
+  dependencies:
+    - plan
+  when: manual
