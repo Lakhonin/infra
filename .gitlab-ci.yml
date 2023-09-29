@@ -1,0 +1,14 @@
+stages:
+  - module-pipelines
+
+terraform:
+  stage: module-pipelines
+  trigger:
+    include:
+      - local: 'terraform/terraform.yml'
+    strategy: depend 
+  only:
+      changes:
+        - terraform/*
+
+
