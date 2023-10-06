@@ -11,4 +11,13 @@ terraform:
       changes:
         - terraform/*
 
+ansible:
+  stage: module-pipelines
+  trigger:
+    include:
+      - local: 'ansible/ansible.yml'
+    strategy: depend 
+  only:
+      changes:
+        - ansible/*
 

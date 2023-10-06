@@ -27,7 +27,7 @@ resource "yandex_iam_service_account" "sa" {
 
 resource "yandex_resourcemanager_folder_iam_member" "sa-editor" {
   folder_id = yandex_resourcemanager_folder.folder.id
-  role      = "editor"
+  role      = "admin"
   member    = "serviceAccount:${yandex_iam_service_account.sa.id}"
   depends_on = [
     yandex_iam_service_account.sa,
@@ -55,34 +55,12 @@ resource "yandex_vpc_network" "network" {
   description = "Main network for ${yandex_resourcemanager_folder.folder.name}"
 }
 
-resource "yandex_vpc_subnet" "subnet1" {
+resource "yandex_vpc_subnet" "subnet" {
   folder_id = yandex_resourcemanager_folder.folder.id
   name           = "${yandex_resourcemanager_folder.folder.name}-ru-central1-a"
   zone           = "ru-central1-a"
   network_id     = yandex_vpc_network.network.id
   v4_cidr_blocks = ["10.0.10.0/24"]
-  depends_on = [
-    yandex_vpc_network.network,
-  ]
-}
-
-resource "yandex_vpc_subnet" "subnet2" {
-  folder_id = yandex_resourcemanager_folder.folder.id
-  name           = "${yandex_resourcemanager_folder.folder.name}-ru-central1-b"
-  zone           = "ru-central1-b"
-  network_id     = yandex_vpc_network.network.id
-  v4_cidr_blocks = ["10.0.20.0/24"]
-  depends_on = [
-    yandex_vpc_network.network,
-  ]
-}
-
-resource "yandex_vpc_subnet" "subnet3" {
-  folder_id = yandex_resourcemanager_folder.folder.id
-  name           = "${yandex_resourcemanager_folder.folder.name}-ru-central1-c"
-  zone           = "ru-central1-c"
-  network_id     = yandex_vpc_network.network.id
-  v4_cidr_blocks = ["10.0.30.0/24"]
   depends_on = [
     yandex_vpc_network.network,
   ]
@@ -104,9 +82,7 @@ resource "yandex_compute_instance_group" "masters" {
     yandex_iam_service_account.sa,
     yandex_resourcemanager_folder_iam_member.sa-editor,
     yandex_vpc_network.network,
-    yandex_vpc_subnet.subnet1,
-    yandex_vpc_subnet.subnet2,
-    yandex_vpc_subnet.subnet3,
+    yandex_vpc_subnet.subnet,
   ]
   
   # Шаблон экземпляра, к которому принадлежит группа экземпляров.
@@ -133,11 +109,12 @@ resource "yandex_compute_instance_group" "masters" {
     network_interface {
       network_id = yandex_vpc_network.network.id
       subnet_ids = [
-        yandex_vpc_subnet.subnet1.id,
-        yandex_vpc_subnet.subnet2.id,
-        yandex_vpc_subnet.subnet3.id,
+        yandex_vpc_subnet.subnet.id,
       ]
-      nat = false
+      nat = true
+    }
+    metadata = {
+      user-data = data.template_file.userdata.rendered
     }
     scheduling_policy {
       preemptible = true
@@ -156,8 +133,6 @@ resource "yandex_compute_instance_group" "masters" {
   allocation_policy {
     zones = [
       "ru-central1-a",
-      "ru-central1-b",
-      "ru-central1-c",
     ]
   }
 
@@ -177,9 +152,8 @@ resource "yandex_compute_instance_group" "workers" {
     yandex_iam_service_account.sa,
     yandex_resourcemanager_folder_iam_member.sa-editor,
     yandex_vpc_network.network,
-    yandex_vpc_subnet.subnet1,
-    yandex_vpc_subnet.subnet2,
-    yandex_vpc_subnet.subnet3,
+    yandex_vpc_subnet.subnet,
+
   ]
   
   # Шаблон экземпляра, к которому принадлежит группа экземпляров.
@@ -206,11 +180,12 @@ resource "yandex_compute_instance_group" "workers" {
     network_interface {
       network_id = yandex_vpc_network.network.id
       subnet_ids = [
-        yandex_vpc_subnet.subnet1.id,
-        yandex_vpc_subnet.subnet2.id,
-        yandex_vpc_subnet.subnet3.id,
+        yandex_vpc_subnet.subnet.id,
       ]
-      nat = false
+      nat = true
+    }
+    metadata = {
+      user-data = data.template_file.userdata.rendered
     }
     scheduling_policy {
       preemptible = true
@@ -229,8 +204,6 @@ resource "yandex_compute_instance_group" "workers" {
   allocation_policy {
     zones = [
       "ru-central1-a",
-      "ru-central1-b",
-      "ru-central1-c",
     ]
   }
 
@@ -250,9 +223,7 @@ resource "yandex_compute_instance_group" "ingresses" {
     yandex_iam_service_account.sa,
     yandex_resourcemanager_folder_iam_member.sa-editor,
     yandex_vpc_network.network,
-    yandex_vpc_subnet.subnet1,
-    yandex_vpc_subnet.subnet2,
-    yandex_vpc_subnet.subnet3,
+    yandex_vpc_subnet.subnet,
   ]
   
   # Шаблон экземпляра, к которому принадлежит группа экземпляров.
@@ -279,9 +250,7 @@ resource "yandex_compute_instance_group" "ingresses" {
     network_interface {
       network_id = yandex_vpc_network.network.id
       subnet_ids = [
-        yandex_vpc_subnet.subnet1.id,
-        yandex_vpc_subnet.subnet2.id,
-        yandex_vpc_subnet.subnet3.id,
+        yandex_vpc_subnet.subnet.id,
       ]
       nat = true
     }
@@ -305,8 +274,6 @@ resource "yandex_compute_instance_group" "ingresses" {
   allocation_policy {
     zones = [
       "ru-central1-a",
-      "ru-central1-b",
-      "ru-central1-c",
     ]
   }
 
@@ -317,5 +284,6 @@ resource "yandex_compute_instance_group" "ingresses" {
     max_deleting    = 2
   }
 }
+
 
 
