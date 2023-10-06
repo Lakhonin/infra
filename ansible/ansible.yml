@@ -1,0 +1,17 @@
+stages:
+  - deploy
+
+image: alpine/gitlab-ansible-terraform:1.1.9
+before_script:
+  - cd ansible
+  - ansible --version
+  - eval $(ssh-agent -s)
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  - mkdir -p ~/.ssh
+  - chmod -R 600 ~/.ssh
+  - export ANSIBLE_FORCE_COLOR=true
+deploy:
+  stage: deploy
+  script:
+    - ansible-playbook playbook.yaml -i hosts.ini
+
