@@ -6,20 +6,24 @@ terraform:
   trigger:
     include:
       - local: 'terraform/terraform.yml'
-    strategy: depend 
-  only:
-      changes:
-        - terraform/*
+    strategy: depend
+  rules:
+    - changes:
+          - terraform/*
+    - if: $VERSION
+      when: never
 
 helm:
   stage: module-pipelines
   trigger:
     include:
       - local: 'helm/helm.yml'
-    strategy: depend 
-  only:
-      changes:
-        - helm/*
+    strategy: depend
+  rules:
+    - changes:
+          - helm/*
+    - if: $VERSION
+      when: never
 
 charts:
   stage: module-pipelines
@@ -28,7 +32,7 @@ charts:
   trigger:
     include:
       - local: 'charts/charts.yml'
-    strategy: depend 
-  only:
-      changes:
-        - charts/*
+    strategy: depend
+  rules:
+    - changes:
+          - charts/*
