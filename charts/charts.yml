@@ -1,0 +1,35 @@
+stages:
+  - test
+  - release
+  - deploy
+
+image: alpine:3.15.0 
+before_script:
+- apk add bash curl
+- curl -L https://get.helm.sh/helm-v3.12.3-linux-amd64.tar.gz | tar xz && chmod +x linux-amd64/helm && mv linux-amd64/helm /usr/bin/helm && rm -rf linux-amd64
+- export KUBECONFIG=$kubeconfig
+- cd charts
+
+test-chart:
+  stage: test
+  script:
+  - helm lint ./momo-store
+
+upload-chart-last:
+  stage: release
+  script:
+  - helm package --app-version=${VERSION} ./momo-store
+  - curl -k -u $NEXUS_USER:$NEXUS_PASSWORD https://nexus.commerce-store.ru/repository/momo-store/ --upload-file $(find $(pwd) -name momo-store*.tgz)
+
+
+deploy-chart:
+  stage: deploy
+  script:
+  - helm repo add momo --insecure-skip-tls-verify https://nexus.commerce-store.ru/repository/momo-store/
+  - helm repo update
+  - helm upgrade --insecure-skip-tls-verify --install momo-store --create-namespace -n momo-store momo/momo-store --set frontend.dockerconfigjson=$dockerconfigjson --set backend.dockerconfigjson=$dockerconfigjson --set frontend.tag=${VERSION} --set backend.tag=${VERSION} --atomic --timeout 15m
+  rules:
+    - when: manual
+
+
+

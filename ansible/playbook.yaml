@@ -1,5 +1,0 @@
-- name: Install dependencies for kubernetes
-  hosts: all
-  roles:
-    - kubernetes-dependencies
-    - kubernetes-install

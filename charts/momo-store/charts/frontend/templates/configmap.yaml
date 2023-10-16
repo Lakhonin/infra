@@ -1,0 +1,32 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+data:
+  default.conf: |
+    server {
+      listen 8080;
+      location / {
+          root   /usr/share/nginx/html;
+          index  index.html;
+          try_files $uri $uri/ /index.html;
+      }
+      location /api {
+          rewrite /api/(.*) /$1  break;
+          proxy_pass http://backend:8081;
+          proxy_redirect     off;
+          proxy_set_header   Host $host;
+      }
+      location /momostore {
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_set_header Host $http_host;
+          proxy_connect_timeout 300;
+          proxy_http_version 1.1;
+          proxy_set_header Connection "";
+          chunked_transfer_encoding off;
+          proxy_pass http://minio.minio.svc.cluster.local:9000/momostore/;
+      }
+    } 

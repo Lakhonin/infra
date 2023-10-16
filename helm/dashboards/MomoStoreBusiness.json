@@ -1,0 +1,312 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 24,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max",
+            "min"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"1\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Пельмени",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"2\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Хинкали",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"3\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Манты",
+          "range": true,
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"4\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Буузы",
+          "range": true,
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"5\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Цзяоцзы",
+          "range": true,
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"6\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Гедза",
+          "range": true,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"7\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Дим-самы",
+          "range": true,
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"8\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Момо",
+          "range": true,
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"9\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Вонтоны",
+          "range": true,
+          "refId": "I"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"10\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Баоцзы",
+          "range": true,
+          "refId": "J"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"11\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Кундюмы",
+          "range": true,
+          "refId": "K"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"12\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Курзе",
+          "range": true,
+          "refId": "L"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"13\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Бораки",
+          "range": true,
+          "refId": "M"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "b268e758-a2a3-44b5-b38a-61d7fa005ae5"
+          },
+          "editorMode": "code",
+          "expr": "sum(dumplings_listing_count{id=\"14\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Равиоли",
+          "range": true,
+          "refId": "N"
+        }
+      ],
+      "title": "График трафика просмотра для каждой упаковки пельменей",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Momo Store Business",
+  "uid": "b22366a4-583c-497b-ae0e-77a5a185039a",
+  "version": 3,
+  "weekStart": ""
+}

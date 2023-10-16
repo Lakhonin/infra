@@ -1,0 +1,90 @@
+
+.0stages:
+  - deploy
+
+image: alpine:3.15.0 
+before_script:
+- apk add bash curl
+- curl -L https://get.helm.sh/helm-v3.12.3-linux-amd64.tar.gz | tar xz && chmod +x linux-amd64/helm && mv linux-amd64/helm /usr/bin/helm && rm -rf linux-amd64
+- export KUBECONFIG=$kubeconfig
+- cd helm
+
+ingress-nginx:
+  stage: deploy
+  script:
+  - helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+  - helm repo update
+  - helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --create-namespace --namespace ingress-nginx --version 4.8.1 --set controller.extraArgs.default-ssl-certificate="kube-system/wildcard-domain-name-secret"
+  rules:
+    - when: manual
+
+prometheus:
+  stage: deploy
+  script:
+  - helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+  - helm repo update
+  - helm upgrade --install --create-namespace --values prometheus-values.yaml prometheus -n monitoring prometheus-community/prometheus --version 25.1.0
+  rules:
+    - when: manual
+
+nexus:
+  stage: deploy
+  script:
+  - helm repo add sonatype https://sonatype.github.io/helm3-charts/
+  - helm repo update
+  - helm upgrade --install --create-namespace --values nexus-values.yaml nexus -n nexus sonatype/nexus-repository-manager --version 61.0.2
+  rules:
+    - when: manual
+
+minio:
+  stage: deploy
+  script:
+  - helm repo add minio https://charts.min.io/
+  - helm repo update
+  - helm upgrade --install --create-namespace --values minio-values.yaml minio -n minio minio/minio --version 5.0.14  --set rootUser="$rootUser" --set rootPassword="$rootPassword"
+  rules:
+    - when: manual
+
+minio:
+  stage: deploy
+  script:
+  - helm repo add minio https://charts.min.io/
+  - helm repo update
+  - helm upgrade --install --create-namespace --values minio-values.yaml minio -n minio minio/minio --version 5.0.14  --set rootUser=$rootUser --set rootPassword=$rootPassword
+  rules:
+    - when: manual
+
+loki:
+  stage: deploy
+  script:
+  - helm repo add grafana https://grafana.github.io/helm-charts
+  - helm repo update
+  - helm upgrade --install --create-namespace --values loki-values.yaml loki -n monitoring grafana/loki --version 5.28.0 --set loki.storage.s3.s3="${minio_access_string}"
+  rules:
+    - when: manual
+
+promtail:
+  stage: deploy
+  script:
+  - helm repo add grafana https://grafana.github.io/helm-charts
+  - helm repo update
+  - helm upgrade --install --create-namespace --values promtail-values.yaml promtail -n monitoring grafana/promtail --version 6.15.2
+  rules:
+    - when: manual
+
+grafana:
+  stage: deploy
+  script:
+  - helm repo add grafana https://grafana.github.io/helm-charts
+  - helm repo update
+  - helm upgrade --install --create-namespace --values grafana-values.yaml grafana -n monitoring grafana/grafana --version 6.60.4
+  rules:
+    - when: manual
+
+
+
+
+
+
+
+

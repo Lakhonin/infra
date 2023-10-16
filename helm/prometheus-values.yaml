@@ -1,0 +1,58 @@
+rbac:
+  create: true
+
+configmapReload:
+  prometheus:
+    enabled: true
+
+server:
+  configPath: /etc/config/prometheus.yml
+  global:
+    scrape_interval: 1m
+    scrape_timeout: 10s
+    evaluation_interval: 1m
+  persistentVolume:
+    enabled: true
+    accessModes:
+      - ReadWriteOnce
+    mountPath: /data
+    size: 8Gi
+  replicaCount: 1
+  service:
+    enabled: true
+    servicePort: 80
+    type: ClusterIP
+  terminationGracePeriodSeconds: 300
+  retention: "1d"
+
+serverFiles:
+  ## Alerts configuration
+  ## Ref: https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/
+  alerting_rules.yml: {}
+  # groups:
+  #   - name: Instances
+  #     rules:
+  #       - alert: InstanceDown
+  #         expr: up == 0
+  #         for: 5m
+  #         labels:
+  #           severity: page
+  #         annotations:
+  #           description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 5 minutes.'
+  #           summary: 'Instance {{ $labels.instance }} down'
+  ## DEPRECATED DEFAULT VALUE, unless explicitly naming your files, please use alerting_rules.yml
+  alerts: {}
+
+alertmanager:
+  enabled: true
+  persistence:
+    size: 2Gi
+
+kube-state-metrics:
+  enabled: false
+
+prometheus-node-exporter:
+  enabled: true
+
+prometheus-pushgateway:
+  enabled: false

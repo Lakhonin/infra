@@ -55,6 +55,14 @@ resource "yandex_vpc_network" "network" {
   description = "Main network for ${yandex_resourcemanager_folder.folder.name}"
 }
 
+resource "yandex_dns_zone" "zone1" {
+  folder_id = yandex_resourcemanager_folder.folder.id
+  name        = "commerce-store-zone"
+  description = "commerce-store public zone"
+  zone    = "commerce-store.ru."
+  public  = true
+}
+
 resource "yandex_vpc_subnet" "subnet" {
   folder_id = yandex_resourcemanager_folder.folder.id
   name           = "${yandex_resourcemanager_folder.folder.name}-ru-central1-a"
@@ -66,222 +74,93 @@ resource "yandex_vpc_subnet" "subnet" {
   ]
 }
 
-data template_file "userdata" {
-  template = file("./userdata.yaml")
-  vars = {
-    username           = var.ssh_login
-    ssh_public_key     = var.ssh_public_key
+resource "yandex_kubernetes_cluster" "k8s" {
+  folder_id = yandex_resourcemanager_folder.folder.id
+  name        = "k8s"
+  description = "description"
+  network_id = "${yandex_vpc_network.network.id}"
+  master {
+    version = "1.26"
+    zonal {
+      zone      = "${yandex_vpc_subnet.subnet.zone}"
+      subnet_id = "${yandex_vpc_subnet.subnet.id}"
+    }
+    public_ip = true
+    maintenance_policy {
+      auto_upgrade = true
+      maintenance_window {
+        start_time = "05:00"
+        duration   = "3h"
+      }
+    }
+  }
+  service_account_id      = "${yandex_iam_service_account.sa.id}"
+  node_service_account_id = "${yandex_iam_service_account.sa.id}"
+  release_channel = "STABLE"
+  network_policy_provider = "CALICO"
+  kms_provider {
+    key_id = "${yandex_kms_symmetric_key.kms-key.id}"
   }
 }
 
-resource "yandex_compute_instance_group" "masters" {
-  name               = "kubernetes-masters"
+resource "yandex_kms_symmetric_key" "kms-key" {
   folder_id = yandex_resourcemanager_folder.folder.id
-  service_account_id = yandex_iam_service_account.sa.id
-  depends_on = [
-    yandex_iam_service_account.sa,
-    yandex_resourcemanager_folder_iam_member.sa-editor,
-    yandex_vpc_network.network,
-    yandex_vpc_subnet.subnet,
-  ]
-  
-  # Шаблон экземпляра, к которому принадлежит группа экземпляров.
+  name              = "kms-key"
+  default_algorithm = "AES_128"
+  rotation_period   = "8760h"
+}
+
+resource "yandex_kubernetes_node_group" "workers" {
+  cluster_id  = "${yandex_kubernetes_cluster.k8s.id}"
+  name = "workers"
+  version     = "1.26"
   instance_template {
-
-    # Имя виртуальных машин, создаваемых Instance Groups
-    name = "master-{instance.index}"
-    # Ресурсы, которые будут выделены для создания виртуальных машин в Instance Groups
-    resources {
-      cores  = 2
-      memory = 2
-      core_fraction = 100 # Базовый уровень производительности vCPU. https://cloud.yandex.ru/docs/compute/concepts/performance-levels
-    }
-
-    # Загрузочный диск в виртуальных машинах в Instance Groups
-    boot_disk {
-      initialize_params {
-        image_id = "fd8iqpj5nifue99bshhi" 
-        size     = 10
-        type     = "network-hdd"
-      }
-    }
-
+    name        = "worker-{instance.index}"
+    platform_id = "standard-v3"
     network_interface {
-      network_id = yandex_vpc_network.network.id
-      subnet_ids = [
-        yandex_vpc_subnet.subnet.id,
-      ]
-      nat = true
+      nat                = true
+      subnet_ids         = ["${yandex_vpc_subnet.subnet.id}"]
     }
-    metadata = {
-      user-data = data.template_file.userdata.rendered
+    resources {
+      memory = 8
+      cores  = 4
+      core_fraction = 100
+    }
+    boot_disk {
+      type = "network-hdd"
+      size = 64
     }
     scheduling_policy {
       preemptible = true
     }
-    network_settings {
-      type = "STANDARD"
+    container_runtime {
+      type = "containerd"
     }
   }
-
-  scale_policy {
-    fixed_scale {
-      size = 3
-    }
-  }
-
-  allocation_policy {
-    zones = [
-      "ru-central1-a",
-    ]
-  }
-
-  deploy_policy {
-    max_unavailable = 3
-    max_creating    = 3
-    max_expansion   = 3
-    max_deleting    = 3
-  }
-}
-
-resource "yandex_compute_instance_group" "workers" {
-  name               = "kubernetes-workers"
-  folder_id = yandex_resourcemanager_folder.folder.id
-  service_account_id = yandex_iam_service_account.sa.id
-  depends_on = [
-    yandex_iam_service_account.sa,
-    yandex_resourcemanager_folder_iam_member.sa-editor,
-    yandex_vpc_network.network,
-    yandex_vpc_subnet.subnet,
-
-  ]
-  
-  # Шаблон экземпляра, к которому принадлежит группа экземпляров.
-  instance_template {
-
-    # Имя виртуальных машин, создаваемых Instance Groups
-    name = "worker-{instance.index}"
-    # Ресурсы, которые будут выделены для создания виртуальных машин в Instance Groups
-    resources {
-      cores  = 2
-      memory = 2
-      core_fraction = 100 # Базовый уровень производительности vCPU. https://cloud.yandex.ru/docs/compute/concepts/performance-levels
-    }
-
-    # Загрузочный диск в виртуальных машинах в Instance Groups
-    boot_disk {
-      initialize_params {
-        image_id = "fd8iqpj5nifue99bshhi" 
-        size     = 10
-        type     = "network-hdd"
-      }
-    }
-
-    network_interface {
-      network_id = yandex_vpc_network.network.id
-      subnet_ids = [
-        yandex_vpc_subnet.subnet.id,
-      ]
-      nat = true
-    }
-    metadata = {
-      user-data = data.template_file.userdata.rendered
-    }
-    scheduling_policy {
-      preemptible = true
-    }
-    network_settings {
-      type = "STANDARD"
-    }
-  }
-
   scale_policy {
     fixed_scale {
       size = 2
     }
   }
-
   allocation_policy {
-    zones = [
-      "ru-central1-a",
-    ]
-  }
-
-  deploy_policy {
-    max_unavailable = 2
-    max_creating    = 2
-    max_expansion   = 2
-    max_deleting    = 2
-  }
-}
-
-resource "yandex_compute_instance_group" "ingresses" {
-  name               = "kubernetes-ingresses"
-  folder_id = yandex_resourcemanager_folder.folder.id
-  service_account_id = yandex_iam_service_account.sa.id
-  depends_on = [
-    yandex_iam_service_account.sa,
-    yandex_resourcemanager_folder_iam_member.sa-editor,
-    yandex_vpc_network.network,
-    yandex_vpc_subnet.subnet,
-  ]
-  
-  # Шаблон экземпляра, к которому принадлежит группа экземпляров.
-  instance_template {
-
-    # Имя виртуальных машин, создаваемых Instance Groups
-    name = "ingress-{instance.index}"
-    # Ресурсы, которые будут выделены для создания виртуальных машин в Instance Groups
-    resources {
-      cores  = 2
-      memory = 2
-      core_fraction = 100 # Базовый уровень производительности vCPU. https://cloud.yandex.ru/docs/compute/concepts/performance-levels
-    }
-
-    # Загрузочный диск в виртуальных машинах в Instance Groups
-    boot_disk {
-      initialize_params {
-        image_id = "fd8iqpj5nifue99bshhi" 
-        size     = 10
-        type     = "network-hdd"
-      }
-    }
-
-    network_interface {
-      network_id = yandex_vpc_network.network.id
-      subnet_ids = [
-        yandex_vpc_subnet.subnet.id,
-      ]
-      nat = true
-    }
-    metadata = {
-      user-data = data.template_file.userdata.rendered
-    }
-    scheduling_policy {
-      preemptible = true
-    }
-    network_settings {
-      type = "STANDARD"
+    location {
+      zone = "ru-central1-a"
     }
   }
+  maintenance_policy {
+    auto_upgrade = true
+    auto_repair  = true
 
-  scale_policy {
-    fixed_scale {
-      size = 2
+    maintenance_window {
+      day        = "monday"
+      start_time = "2:00"
+      duration   = "3h"
     }
-  }
-
-  allocation_policy {
-    zones = [
-      "ru-central1-a",
-    ]
-  }
-
-  deploy_policy {
-    max_unavailable = 2
-    max_creating    = 2
-    max_expansion   = 2
-    max_deleting    = 2
+    maintenance_window {
+      day        = "friday"
+      start_time = "2:00"
+      duration   = "4h30m"
+    }
   }
 }
 

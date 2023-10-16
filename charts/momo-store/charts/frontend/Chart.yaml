@@ -1,0 +1,8 @@
+---
+apiVersion: v2
+type: application
+name: frontend
+description: Momo Store frontend
+
+version: 0.1.1
+appVersion: "1.0.0"

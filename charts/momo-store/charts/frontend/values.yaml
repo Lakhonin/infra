@@ -1,0 +1,12 @@
+image: gitlab.praktikum-services.ru:5050/std-016-026/momo-store/momo-frontend
+fqdn: momo.commerce-store.ru
+environment: production
+dockerconfigjson: 1
+port: 8080
+serviceport: 8080
+replicas: 1
+revisionHistoryLimit: 15
+initialDelaySeconds: 15
+periodSeconds: 30
+timeoutSeconds: 2
+failureThreshold: 6

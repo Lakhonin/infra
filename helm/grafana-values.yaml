@@ -1,0 +1,45 @@
+replicas: 1
+service:
+  enabled: true
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+serviceMonitor:
+  enabled: false
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - grafana.commerce-store.ru
+  tls:
+    - hosts:
+        - grafana.commerce-store.ru
+
+persistence:
+  enabled: true
+  size: 2Gi
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+    - name: Loki
+      type: loki
+      url: http://loki-gateway.monitoring.svc.cluster.local
+    - name: Prometheus
+      type: prometheus
+      url: http://prometheus-server
+      isDefault: true
+
+
+dashboards: {}
+#   default:
+#     MomoStoreApp:
+#       file: dashboards/MomoStoreApp.json
+#     MomoStoreBusiness:
+#       file: dashboards/MomoStoreBusiness.json
+#     MomoStoreInfra:
+#       file: dashboards/MomoStoreInfra.json
+#     MomoStoreLogs:
+#       file: dashboards/MomoStoreLogs.json

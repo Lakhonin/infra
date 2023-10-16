@@ -11,13 +11,24 @@ terraform:
       changes:
         - terraform/*
 
-ansible:
+helm:
   stage: module-pipelines
   trigger:
     include:
-      - local: 'ansible/ansible.yml'
+      - local: 'helm/helm.yml'
     strategy: depend 
   only:
       changes:
-        - ansible/*
+        - helm/*
 
+charts:
+  stage: module-pipelines
+  variables: 
+    VERSION: $VERSION
+  trigger:
+    include:
+      - local: 'charts/charts.yml'
+    strategy: depend 
+  only:
+      changes:
+        - charts/*

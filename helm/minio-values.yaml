@@ -1,0 +1,60 @@
+image:
+  repository: quay.io/minio/minio
+  tag: RELEASE.2023-09-30T07-02-29Z
+  pullPolicy: IfNotPresent
+mcImage:
+  repository: quay.io/minio/mc
+  tag: RELEASE.2023-09-29T16-41-22Z
+  pullPolicy: IfNotPresent
+
+mode: distributed 
+
+minioAPIPort: "9000"
+minioConsolePort: "9001"
+
+deploymentUpdate:
+  type: RollingUpdate
+  maxUnavailable: 0
+  maxSurge: 100%
+
+replicas: 1
+pools: 1
+
+## Enable persistence using Persistent Volume Claims
+persistence:
+  enabled: true
+  size: 10Gi
+service:
+  type: ClusterIP
+  clusterIP: ~
+  port: "9000"
+
+consoleService:
+  type: ClusterIP
+  clusterIP: ~
+  port: "9001"
+
+consoleIngress:
+  enabled: true
+  ingressClassName: nginx
+  path: /
+  hosts:
+    - minio.commerce-store.ru
+  tls:
+    - hosts:
+        - minio.commerce-store.ru
+
+resources:
+  requests:
+    memory: 512Mi
+
+buckets:
+   - name: logs
+     policy: public
+     purge: false
+     versioning: false
+     objectlocking: false
+
+metrics:
+  serviceMonitor:
+    enabled: false

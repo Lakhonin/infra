@@ -1,0 +1,13 @@
+image: gitlab.praktikum-services.ru:5050/std-016-026/momo-store/momo-backend
+environment: production
+dockerconfigjson: 1
+port: 8081
+serviceport: 8081
+replicas: 1
+revisionHistoryLimit: 15
+rollingUpdatemaxUnavailable: 0
+rollingUpdatemaxSurge: 20%
+initialDelaySeconds: 15
+periodSeconds: 30
+timeoutSeconds: 2
+failureThreshold: 6
